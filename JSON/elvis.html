@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Admission Data Visualization</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-lime-400 p-8">
+     <!-- Pie Chart for Gender Distribution -->
+     <div id="chartContainer" class="max-w-3xl mx-auto mt-10 bg-grey shadow-md rounded-lg p-6">
+        <canvas id="genderChart" class="w-full"></canvas>
+    </div>
+
+    <!-- Bar Chart for Students per District -->
+    <div id="districtChartContainer" class="max-w-3xl mx-auto mt-10 bg-grey shadow-md rounded-lg p-6">
+        <canvas id="districtChart" class="w-full"></canvas>
+    </div>
+
+    <p class="text-center text-gray-600 mt-4">These charts visualize the student admission data.</p>
+    
+    </div>
+    <script>
+        async function fetchData() {
+            const response = await fetch('https://okwiielvis.github.io/makerere-student-s-admission-list/admission.json');
+            const data = await response.json();
+            return data.admissionData.pages.flatMap(page => page.students);
+        }
+
+        function createDistrictChart(students) {
+            const districtCounts = {};
+            students.forEach(student => {
+                const district = student.districtName;
+                districtCounts[district] = (districtCounts[district] || 0) + 1;
+            });
+
+            const labels = Object.keys(districtCounts);
+            const counts = Object.values(districtCounts);
+
+            const ctx = document.getElementById('districtChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Students',
+                        data: counts,
+                        backgroundColor: '#2196F0',
+                       // backgroundColor: 'rgba(20, 192, 192, 1)',
+                       // borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function createGenderChart(students) {
+            const genderCounts = { 'Male': 0, 'Female': 0 };
+            students.forEach(student => {
+                genderCounts[student.gender === 'M' ? 'Male' : 'Female']++;
+            });
+
+            const ctx = document.getElementById('genderChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(genderCounts),
+                    datasets: [{
+                        label: 'Number of Students',
+                        data: Object.values(genderCounts),
+                        backgroundColor: ['#4CAF51', '#FF570'],
+                       // backgroundColor: ['rgba(50, 162, 235)', 'rgba(255, 99, 132, 0.6)'],
+                       // borderColor: ['rgba(50, 162, 235)', 'rgba(255, 99, 132, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                }
+            });
+        }
+
+        async function init() {
+            const students = await fetchData();
+            createDistrictChart(students);
+            createGenderChart(students);
+        }
+
+        init();
+    </script>
+    <script src="script.js"></script>
+    <footer>
+        <p class="text-center text-black-600 mt-4">the chart visualizes gender distribution among admitted students.</p>
+    </footer>
+</body>
+</html>
+
